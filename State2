@@ -1,0 +1,34 @@
+                   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                   x                                          x
+                   x          STATE 2: Enumeration            x
+                   x                                          x
+                   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+The STATE 2 is based on the technique of Enumeration
+In this STATE there are [] procedural level (PL)
+
+a) Identify your IP Address, in particular CLASS, SUBNET, STATIC or DYNAMIC, etc...
+
+b) Scanning IP Addresses in the same SUBNET and create a table containing the Addresses found
+
+c) Scanning Ports for every Addresses found and insert them in the table
+
+d) Scanning Services for every port and insert them in the table
+
+
+The same procedure must be applied to the addresses of other SUBNETS
+The purpose is to create a map of the network containing the active 
+services of each individual host to identify its characteristics and classify them as:
+
+1) Client
+2) Server
+3) An other device
+
+drawing a map divided
+
+GREEN: internal (ex eth0 eth1)
+RED: external
+BLU: wifi (wlan0, wlan1)
+ORANGE: dmz
+
