@@ -1,0 +1,11 @@
+ This is a draft of how the state-machine shoul√d work
+
+__________________________________________________________
+STATE # |  NAME        |  MAIN FUNCTION  |  MAIN ERRORS  |
+----------------------------------------------------------
+0       |  init        |  init data      |  memory/HDD   |
+1       |  Network     |  Hack WiFi/ARPp |  ARPlock      |
+2       |  Enumeration |  Fingerprint    |  IDS          |
+3       |  Selection   |  choose_servers |  no exploits  |
+4       |  Attack      |  exploiting     |  exploit fail |
+----------------------------------------------------------
