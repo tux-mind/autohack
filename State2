@@ -25,7 +25,7 @@ services of each individual host to identify its characteristics and classify th
 2) Server
 3) An other device
 
-drawing a map divided
+drawing a map divided in:
 
 GREEN: internal (ex eth0 eth1)
 RED: external
