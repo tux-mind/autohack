@@ -1,0 +1,7 @@
+[optional]			may be we can support unicode chars...but what is the http POST standard?
+[optional]			parallelizing option parsing ( must have globals.err_buff mutex lock )
+[low priority] 	start parsing after read all options. ( where store the arguments? or we can reuse getopt/argv  or option_index ?)
+[normal]				must add support for md5 subtypes for cracking vBullettin, joomla and more md5 hashes.
+[normal]				parser_online(): killing thread while calling getadddrinfo() will leak memory, but wait for getadddrinfo() ends is too
+[normal]				add feature: search for essid online ( the one with cracked algorithm ) for retrieve defaul passphrase files. we will go to integrare OSP into master branch.
+[high priority]		columpsi should define host and subnets structs.
