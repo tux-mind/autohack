@@ -1,7 +1,7 @@
 /*
  *	Autohack - automatically hack everything
  *	Copyright (C) 2012  Massimo Dragano <massimo.dragano@gmail.com>,
- * Andrea Columpsi <andrea.columpsi@gmail.com>
+ * 	Andrea Columpsi <andrea.columpsi@gmail.com>
  *
  *	Autohack is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
  */
 #ifndef COMMON_H
 #define COMMON_H
+#include "header.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -39,16 +40,11 @@
 #include <sys/stat.h>
 #include <netdb.h>
 #include <netinet/tcp.h>
-#include <curl/curl.h>
 #include <time.h>
 #include <pthread.h>
-#include "header.h"
-
 #ifdef HAVE_LIBMAGIC
 	#include <magic.h>
 #endif
-#ifdef _WIN32
-	#include "conio.h"
-#endif
 #include "crypto.c"
+#define uchar unsigned char
 #endif /* COMMON_H */

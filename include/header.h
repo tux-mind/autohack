@@ -1,3 +1,21 @@
+/*
+ *	Autohack - automatically hack everything
+ *	Copyright (C) 2012  Massimo Dragano <massimo.dragano@gmail.com>,
+ * Andrea Columpsi <andrea.columpsi@gmail.com>
+ *
+ *	Autohack is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	Autohack is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with Autohack.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #ifndef HEADER_H
 #define HEADER_H
 
@@ -94,9 +112,11 @@ typedef bool _Bool;
 #	error		"no config.h, ./configure script not executed or failed."
 #endif/* HAVE_CONFIG_H */
 
-/* include core headers */
+/* include headers needed for our types declarations */
+#include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <pthread.h>
 
 /* defines */
 #define MAX_BUFF 				(PATH_MAX)
@@ -105,9 +125,7 @@ typedef bool _Bool;
 #ifndef MAX_THREADS
 	#define MAX_THREADS 20
 #endif
-#ifndef NULL_FILE
-	#define NULL_FILE "/dev/null"
-#endif
+#define uchar unsigned char
 
 /* data structs */
 enum _log_level
@@ -169,7 +187,7 @@ static const char* type_rgx[] =
 	".*"
 };
 
-enum _status { done, running, waiting, parsed, killed }; // thread status
+enum _status { done, running, waiting, parsed, killed }; // thread status ( i forgot what parsed means )
 
 typedef struct _hash
 {
@@ -284,7 +302,7 @@ pthread_mutex_t pool_lock;
 struct _globals globals;
 
 /* prototypes */
-/* common.c */
+/* from common.c */
 void w_report_error(const char *, const char *, int , const char *, int , int , enum _log_level );
 int mysend(int , const char *, long );
 int w_socket(int , int , int , const char *, int );
@@ -311,7 +329,7 @@ void free_wpa(_wpa *);
 char *w_fgets_fix(char *, const char *, int , const char *);
 const char *w_get_mime(const char *, const char *, int);
 void w_argcpy(const char **, const char *, size_t , const char *, const char *,int );
-t_info *find_myself(char *,int);
+t_info *w_find_myself(char *,int);
 static void wait_cleanup(void *);
 static void *thread_wait(void *);
 static void wait_first_cleanup(void *);
@@ -340,9 +358,9 @@ void signal_handler(int signum);
 #define str2low(s) 											(w_str2low((s),__FILE__,__LINE__))
 #define str2up(s)												(w_str2up((s),__FILE__,__LINE__))
 #define fgets_fix(s)										(w_fgets_fix((s),__FILE__,__LINE__,__func__))
-#define tspawn_wait(a,f,w)								(w_thread_spawn((a),(f),(w),__FILE__,__LINE__))
-#define tspawn(a,f)									(w_thread_spawn((a),(f),NULL,__FILE__,__LINE__))
-#define find_myself()									(w_find_myself(__FILE__,__LINE__))
+#define tspawn_wait(a,f,w)							(w_thread_spawn((a),(f),(w),__FILE__,__LINE__))
+#define tspawn(a,f)											(w_thread_spawn((a),(f),NULL,__FILE__,__LINE__))
+#define find_myself()										(w_find_myself(__FILE__,__LINE__))
 #define get_full_path(f)								(w_get_full_path((f),__FILE__,__LINE__,__func__))
 #define tmpnam(s)												(w_tmpnam((s),__FILE__,__LINE__,__func__))
 #define add_wpa(e,h)										(w_add_wpa((e),(h),__FILE__,__LINE__))
@@ -354,12 +372,12 @@ void signal_handler(int signum);
  * print will print static strings, in order to avoid extra mutex locks.
  * if {fatal,report,print} have a 'p' before they will use perror for printing error message.
  */
-#define report(log, form, args...)				_report(log,0,0,form,##args)
-#define preport(log, form, args...)			_report(log,1,0,form,##args)
-#define fatal(msg)															w_report_error(msg,__FILE__,__LINE__,__func__,0,1,error)
-#define pfatal(msg)														w_report_error(msg,__FILE__,__LINE__,__func__,1,1,error)
-#define _report(log, p, f, form, args...)		 {pthread_mutex_lock(&globals.err_buff_lock); snprintf(globals.err_buff,MAX_BUFF,form,##args); w_report_error(globals.err_buff,__FILE__,__LINE__,__func__,(p),(f),(log));pthread_mutex_unlock(&globals.err_buff_lock);}
-#define print(log,msg)												w_report_error(msg,__FILE__,__LINE__,__func__,0,0,log)
+#define report(log, form, args...)					_report(log,0,0,form,##args)
+#define preport(log, form, args...)					_report(log,1,0,form,##args)
+#define _report(log, p, f, form, args...)		{pthread_mutex_lock(&globals.err_buff_lock); snprintf(globals.err_buff,MAX_BUFF,form,##args); w_report_error(globals.err_buff,__FILE__,__LINE__,__func__,(p),(f),(log));pthread_mutex_unlock(&globals.err_buff_lock);}
+#define fatal(msg)													w_report_error(msg,__FILE__,__LINE__,__func__,0,1,error)
+#define pfatal(msg)													w_report_error(msg,__FILE__,__LINE__,__func__,1,1,error)
+#define print(log,msg)											w_report_error(msg,__FILE__,__LINE__,__func__,0,0,log)
 #define pprint(log,msg)											w_report_error(msg,__FILE__,__LINE__,__func__,1,0,log)
 #endif /* COMMON_H */
 #endif /* HEADER_H */

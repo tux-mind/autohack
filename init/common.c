@@ -19,8 +19,6 @@
 
 #include "common.h"
 
-extern struct _globals globals;
-
 /* this is the main print funtion.
  * print (call_level) followed by (msg).
  * if (use_perror) is not 0 will use perror for printing error.
@@ -328,7 +326,7 @@ char *w_digest(unsigned char *pswd, /*char *salt,*/hash_type type, const char *f
 			pthread_mutex_unlock(&(globals.err_buff_lock));
 	}
 	/* no digest produce less then 6 chars, so the check will surely fail.*/
-	return "FAIL"; 
+	return "FAIL";
 }
 
 /* return a new string that is the lowercase copy of the (arg) */
@@ -595,7 +593,7 @@ void w_add_hash_plain(_hash *found_hash, char *hash, struct t_info *thread, char
 			pthread_mutex_unlock(&(globals.err_buff_lock));
 			htmp->plain = w_malloc(len*sizeof(char),__FILE__,__LINE__);
 			strncpy(htmp->plain,plain,len);
-			w_write_out(htmp,NULL,__FILE__,__LINE__,__func__);
+			//w_write_out(htmp,NULL,__FILE__,__LINE__,__func__);
 		}
 	}
 	pthread_mutex_unlock(&(htmp->lock));
@@ -744,27 +742,32 @@ void print_type_list()
 	return;
 }
 
-/* find the first file that match (file) in directory (indirectory) and subdirs
- * TODO: since there is recursion we must optimize memory allocation here.
- * TODO: use w_malloc
- */
+/* find the first file that match (file) in directory (indirectory) and subdirs */
 char *find_file(const char *indirectory, const char *file)
 {
 	struct dirent *d;
 	DIR *dir;
 	char 	*file_path,
-				*match,
+				*subdirectory,
 				*directory;
-	int found=0;
+	int found;
 
-	file_path = malloc(NAME_MAX*sizeof(char));
-	match = malloc(NAME_MAX*sizeof(char));
-	directory = malloc(NAME_MAX*sizeof(char));
-	strncpy(directory,indirectory,NAME_MAX);
-	if(directory[strlen(indirectory)-1] != '/')
+	if(indirectory == NULL || file == NULL)
+	{
+		w_report_error("called with NULL argument.",__FILE__,__LINE__,__func__,0,0,error);
+		return NULL;
+	}
+
+	file_path = w_malloc(NAME_MAX*sizeof(char),__FILE__,__LINE__);
+
+	// use found for store the size of the input directory lenght
+	found = strlen(indirectory) + 2; // // one for the optional extra '/'
+	directory = w_malloc(found*sizeof(char),__FILE__,__LINE__);
+	strncpy(directory,indirectory,found);
+	if(directory[found - 3] != '/')
 		strncat(directory,"/",1);
 	strncpy(file_path,"",NAME_MAX);
-
+	found = 0;
 
 	if( (dir = opendir(directory)) == NULL )
 		return NULL;
@@ -782,25 +785,25 @@ char *find_file(const char *indirectory, const char *file)
 	closedir(dir);
 	if(found)
 	{
-		free(match);
 		free(directory);
 		return file_path;
 	}
 	free((void *) file_path);
+	subdirectory = w_malloc(NAME_MAX*sizeof(char),__FILE__,__LINE__);
 	dir = opendir(directory);
 
 	// scan all subdirectory ( not "." and ".." )
 	while( ( d = readdir(dir) ) != NULL && !found)
 		if(	d->d_type == DT_DIR &&
-				strncmp(d->d_name,".",NAME_MAX) &&
-				strncmp(d->d_name,"..",NAME_MAX))
+				strncmp(d->d_name,".",2) &&
+				strncmp(d->d_name,"..",3))
 		{
-			snprintf(match,NAME_MAX,"%s%s",directory,d->d_name);
-			if( (file_path = find_file(match,file)) != NULL )
+			snprintf(subdirectory,NAME_MAX,"%s%s",directory,d->d_name);
+			if( (file_path = find_file(subdirectory,file)) != NULL )
 				found = 1;
 		}
 
-	free(match);
+	free(subdirectory);
 	free(directory);
 	closedir(dir);
 
@@ -849,7 +852,7 @@ char *w_get_full_path( const char *arg, const char *file,int line_no,const char 
 					w_report_error(globals.err_buff,file,line_no,caller,1,0,error);
 				}
 				else
-					found = true; 
+					found = true;
 				pthread_mutex_unlock(&(globals.err_buff_lock));
 			}
 		}
@@ -946,7 +949,7 @@ void w_add_wpa(char *essid, hccap_t *hccap, const char *file, int line_no)
 }
 
 /* compute the keymic from (wpa) with supplied (key), and compare with the found one.
- * part of this code is taken from aircrack-ng suite */
+ * lot of this code is taken from aircrack-ng suite */
 bool test_wpa_key(hccap_t *wpa, char *key)
 {
 	int i;
@@ -1082,7 +1085,7 @@ t_info *w_find_myself(char *file, int line_no)
 {
 	t_info *ttmp = NULL;
 	pthread_t thread_id = pthread_self();
-	
+
 	pthread_mutex_lock(&pool_lock);
 	for(ttmp=globals.tpool;ttmp!=NULL && ttmp->thread != thread_id;ttmp=ttmp->next);
 	pthread_mutex_unlock(&pool_lock);
@@ -1109,12 +1112,12 @@ static void *thread_wait(void *arg)
 	void *(*func_ptr)(void *) = ((struct input_args*)arg)->func;
 	t_info *self = NULL;
 	pthread_t wait = ((struct input_args*)arg)->wait;
-	
+
 	free(arg);
-	
+
 	//fetch myself in the waiting phase
 	self = w_find_myself(__FILE__,__LINE__);
-	
+
 	pthread_cleanup_push(wait_cleanup,NULL);
 	while(pthread_kill(wait,0)==0)
 	{
@@ -1188,7 +1191,7 @@ static void *thread_wait_first(void *arg)
 /* launch a new thread that execute (func) with (arg)
  * if a (wait) thread is given the spawned one will wait until the first end.
  * if running threads number overclimb the number of processors,
- * the spawned thread will wait until any one of the others threads finish.
+ * the spawned thread will wait until anyone of the others threads finish.
  */
 struct t_info *w_spawn_thread(void *(*func)(void*), void *arg, t_info *wait, const char *file, int line_no)
 {
@@ -1263,7 +1266,7 @@ static size_t memory_writer(void *contents, size_t size, size_t nmemb, void *use
 	while((mem->memory = realloc(mem->memory, mem->size + realsize + 1)) == NULL && errno == EINPROGRESS )
 		usleep(10);
 	if (mem->memory == NULL)
-		w_report_error("memory_writer",__FILE__,__LINE__,__func__,1,1,error);
+		w_report_error("memory_writer()",__FILE__,__LINE__,__func__,1,1,error);
 
   memcpy(&(mem->memory[mem->size]), contents, realsize);
   mem->size += realsize;
@@ -1365,5 +1368,3 @@ void signal_handler(int signum)
 	//if we are here after a 'fatal' report something horrible is happend, so suicide.
 	raise(SIGTERM);
 }
-
-#include "common_macro.h"
