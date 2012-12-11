@@ -16,6 +16,12 @@
  *	You should have received a copy of the GNU General Public License
  *	along with Autohack.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <openssl/hmac.h>
-#include <openssl/sha.h>
-#include <openssl/md5.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <linux/netdevice.h>
+#include <arpa/inet.h>
+#include "header.h"

@@ -117,13 +117,17 @@ typedef bool _Bool;
 #include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/param.h>
 
 /* defines */
 #define MAX_BUFF 				(PATH_MAX)
 #define MAX_LINE				255
 #define TKILL_TIMEOUT		100 // ms
+#ifndef MAX_INTERFACES // maximum number of network interfaces
+#	define MAX_INTERFACES 20
+#endif
 #ifndef MAX_THREADS
-	#define MAX_THREADS 20
+#	define MAX_THREADS 20
 #endif
 #define uchar unsigned char
 
@@ -224,10 +228,19 @@ typedef struct _wpa
 	struct _wpa *next;
 }_wpa;
 
+typedef struct _iface
+{
+	unsigned int id;
+	const char *name,*path;
+	char *internal_name;
+	struct _iface *next;
+}_iface;
+
 //N3tAug3r should fill the following 2 structs
 typedef struct _subnet
 {
 	char *address;
+	_iface *iface;
 	struct _subnet *next;
 }_subnet;
 
@@ -278,6 +291,7 @@ struct _cmd_opts {
  * cur_host is the current focused host.
  * subnet_list is the list of the founded subnets.
  * cur_subnet is the current focused subnet.
+ * iface_list is the list of the founded network interfaces.
  * TODO: add epxloit_list
  * err_buff_lock is the mutex that prevent multiple threads access to error buffer at the same time.
  * tpool is the global thread pool.
@@ -291,6 +305,7 @@ struct _globals {
 	_hash *hash_list,*cur_hash;
 	_host *host_list,*cur_host;
 	_subnet *subnet_list,*cur_subnet;
+	_iface *iface_list;
 	pthread_mutex_t err_buff_lock;
 	t_info *tpool;
 };
@@ -319,6 +334,9 @@ void w_write_out(_hash *, _wpa *, const char *, int , const char *);
 void w_add_hash( hash_type ,const char *, const char *, int );
 void w_del_hash(_hash *, const char *, int );
 void w_add_hash_plain(_hash *, char *, struct t_info *, char *, const char *, int );
+void w_add_iface( char *, char *, int, const char *);
+void w_del_iface( _iface *, char *, int, const char *);
+void free_iface(_iface *);
 void print_lists();
 void print_type_list();
 char *find_file(const char *, const char *);
@@ -328,7 +346,7 @@ bool test_wpa_key(hccap_t *, char *);
 void free_wpa(_wpa *);
 char *w_fgets_fix(char *, const char *, int , const char *);
 const char *w_get_mime(const char *, const char *, int);
-void w_argcpy(const char **, const char *, size_t , const char *, const char *,int );
+void w_argcpy(const char **, const char *, size_t , const char *, int, const char *);
 t_info *w_find_myself(char *,int);
 static void wait_cleanup(void *);
 static void *thread_wait(void *);
@@ -338,7 +356,10 @@ struct t_info *w_spawn_thread(void *(*)(void*), void *, t_info *, const char *, 
 static size_t memory_writer(void *, size_t , size_t , void *);
 void destroy_all();
 void signal_handler(int signum);
-
+/* from init.c */
+void init(int,char**);
+void check_whoami();
+void fill_iface_list();
 
 /* macros */
 #ifndef COMMON_H
@@ -366,6 +387,9 @@ void signal_handler(int signum);
 #define add_wpa(e,h)										(w_add_wpa((e),(h),__FILE__,__LINE__))
 #define add_wpa_key(t,k)								(w_add_wpa_key((t),(k),__FILE__,__LINE__))
 #define add_hash_plain(h,hsh,t,p)				(w_add_hash_plain((h),(hsh),(t),(p),__FILE__,__LINE__))
+#define add_iface(n)										(w_add_iface((n),__FILE__,__LINE__,__func__))
+#define del_iface(i)										(w_del_iface((i),__FILE__,__LINE__,__func__))
+
 /* report messages to console.
  * report will print the msg after formatting the (form) string with (args)
  * fatal will do the same, but it also exit with error and close the entire program.

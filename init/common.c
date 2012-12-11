@@ -1,7 +1,7 @@
 /*
  *	Autohack - automatically hack everything
  *	Copyright (C) 2012  Massimo Dragano <massimo.dragano@gmail.com>,
- * Andrea Columpsi <andrea.columpsi@gmail.com>
+ *	Andrea Columpsi <andrea.columpsi@gmail.com>
  *
  *	Autohack is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
  *
  *	You should have received a copy of the GNU General Public License
  *	along with Autohack.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 #include "common.h"
 
@@ -482,6 +482,72 @@ void w_add_hash( hash_type type,const char *hash_arg, const char *file, int line
 	}
 }
 
+/* add interface with (name) to the global iface_list. */
+void w_add_iface( char *name, char *file, int line_no, const char *func)
+{
+	static unsigned int id = 0;
+	_iface *itmp;
+
+	if(name == NULL)
+		w_report_error("called with NULL argument.",file,line_no,__func__,0,0,error);
+	else
+	{
+		if(globals.iface_list == NULL)
+			itmp = globals.iface_list = w_malloc(sizeof(_iface),__FILE__,__LINE__);
+		else
+		{
+			for(itmp = globals.iface_list;itmp->next;itmp=itmp->next);
+			itmp = itmp->next = w_malloc(sizeof(_iface),__FILE__,__LINE__);
+		}
+		itmp->next = NULL;
+		itmp->id = id++;
+		w_argcpy(&(itmp->name),name,MAX_BUFF,__FILE__,__LINE__,__func__);
+	}
+}
+
+/* delete interface (del_item) from global iface_list. */
+void w_del_iface( _iface *del_item, char *file, int line_no, const char *func)
+{
+	_iface *itmp = NULL,*iold = NULL;
+
+	if(del_item == NULL)
+		w_report_error("called with NULL argument.",file,line_no,__func__,0,0,error);
+	else
+	{
+		for(itmp = globals.iface_list;itmp && itmp != del_item;itmp=itmp->next)
+			iold=itmp;
+		if(itmp == NULL)
+		{
+			pthread_mutex_lock(&(globals.err_buff_lock));
+			snprintf(globals.err_buff,MAX_BUFF,"interface #%d not in iface_list.",del_item->id);
+			w_report_error(globals.err_buff,file,line_no,__func__,0,0,error);
+			pthread_mutex_unlock(&(globals.err_buff_lock));
+		}
+		else if(iold == NULL) /* delete the first item of the list */
+		{
+			globals.iface_list = itmp->next;
+			free_iface(itmp);
+		}
+		else
+		{
+			iold->next = itmp->next;
+			free_iface(itmp);
+		}
+	}
+}
+
+/* free a iface struct. */
+void free_iface(_iface *item)
+{
+	if(item->name != NULL)
+		free((void *) item->name);
+	if(item->path != NULL)
+		free((void *) item->path);
+	if(item->internal_name != NULL)
+		free((void *) item->internal_name);
+	free(item);
+}
+
 /* delete the (del_item) hash from the global hash_list */
 void w_del_hash(_hash *del_item, const char *file, int line_no)
 {
@@ -600,20 +666,21 @@ void w_add_hash_plain(_hash *found_hash, char *hash, struct t_info *thread, char
 	return;
 }
 
-/* print the list of known hash and WPA
+/* TODO: split up; print the list of known hash and WPA
  * TODO: print also hosts and subnets
  */
 void print_lists()
 {
 	_hash *tmp=NULL;
-	struct _wpa *wpa=NULL;
+	_wpa *wpa=NULL;
+	_iface *itmp=NULL;
 	unsigned int id_max;
 	int type_max,hash_max,plain_max,len,i;
 	void *limit[4];
 	char line[MAX_BUFF],format[MAX_BUFF],*ptr,*end;
 
 
-	if(globals.hash_list==NULL && globals.wpa_list == NULL)
+	if(globals.hash_list==NULL && globals.wpa_list == NULL && globals.iface_list == NULL)
 		return;
 	if(globals.hash_list!=NULL)
 	{
@@ -724,6 +791,61 @@ void print_lists()
 		}
 
 		printf("%s",line);
+	}
+
+	if(globals.iface_list != NULL)
+	{
+		id_max = 2;/*strlen("ID");*/
+		hash_max = 5;/*strlen("IFACE");*/
+		plain_max = 4;/*strlen("NAME");*/
+
+		limit[0] = (void *) &id_max;
+		limit[1] = (void *) &hash_max;
+		limit[2] = (void *) &plain_max;
+
+		for(itmp = globals.iface_list;itmp;itmp=itmp->next)
+		{
+			if( ( itmp->id / (id_max * 10)) > 0)
+				id_max = log10(itmp->id);
+			if( itmp->name != NULL && (len=strlen(itmp->name)) > hash_max)
+				hash_max = len;
+			if( itmp->internal_name != NULL && (len = strlen(itmp->internal_name)) > plain_max)
+				plain_max = len;
+		}
+
+		// building line
+		// "+-----+---------+----------------------------------------+---------------+"
+		ptr=line;
+		end= ptr + MAX_BUFF;
+		*ptr = '+';
+		ptr++;
+
+		// use len as counter
+		for(i=0;i<3;i++,*ptr='+',ptr++)
+			for(len = 0; len < *((int *) limit[i]) && ptr < end;len++,ptr++)
+				*ptr='-';
+		*ptr='\n';
+		ptr++;
+		*ptr='\0';
+
+		snprintf(format,MAX_BUFF,"|%-*s|%-*s|%-*s|\n",id_max,"ID",hash_max,"IFACE",plain_max,"NAME");
+		printf("\n%s%s%s",line,format,line);
+
+		for(itmp=globals.iface_list;itmp!=NULL;itmp=itmp->next)
+		{
+			if(itmp->name==NULL)
+				ptr="";
+			else
+				ptr=(char *)itmp->name;
+			if(itmp->internal_name==NULL)
+				end="";
+			else
+				end=itmp->internal_name;
+			printf("|%-*u|%-*s|%-*s|\n",id_max,itmp->id,hash_max,ptr,plain_max,end);
+		}
+
+		printf("%s",line);
+
 	}
 	return;
 }
@@ -1054,7 +1176,7 @@ const char *w_get_mime(const char *arg, const char *file, int line_no)
 #endif
 
 /* copy (arg) to (dst) checking the len (max_len) and preserving the const attribute. */
-void w_argcpy(const char **dst, const char *arg, size_t max_len, const char *func, const char *file,int line_no)
+void w_argcpy(const char **dst, const char *arg, size_t max_len, const char *file, int line_no, const char *func)
 {
 	char *tmp;
 	size_t arg_len;
