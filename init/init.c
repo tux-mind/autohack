@@ -28,6 +28,8 @@ void init(int argc, char **argv)
 	signal(SIGINT, signal_handler);
 	check_whoami();
 	fill_iface_list();
+	option_parser(argc,argv);
+	report(debug,"global command line: online=0x%x; dict=0x%x; passive=0x%x;",globals.options.online,globals.options.dict,globals.options.passive);
 }
 
 void check_whoami()
@@ -50,4 +52,77 @@ void fill_iface_list()
 	interfaces = ifconf.ifc_len / sizeof(struct ifreq);
 	for(i = 0; i < interfaces; i++)
 		add_iface(ifreq[i].ifr_name);
+}
+
+/* print help */
+void usage(char *prog_name)
+{
+	const char *msg_fmt =
+	"%s [-optionsgoeshere] [argshere]\n"
+	"\n"
+	"automatically hack everithing.\n"
+	"\n"
+	"options:\n"
+	"\t-h\tprint this message\n"
+	"\t-o\toutfile\n"
+	"\t-p\tpassive mode\n"
+	"\n"
+	"Developed by:\n"
+	"\tMassimo Dragano <massimo.dragano@gmail.com>\n"
+	"\tAndrea Columpsi <andrea.columpsi@gmail.com>\n"
+	"\n"
+	"%s - v0.0.0\n";
+	
+	printf(msg_fmt,prog_name,prog_name);
+}
+
+
+/* parsing user input options */
+void option_parser(int argc, char** argv)
+{
+	bool 	want_exit = false,
+					bad_opts = false;
+					
+	int c;
+	
+	
+	while((c = getopt(argc,argv,"hpo:")) != -1)
+	{
+			switch(c)
+			{
+				case 'h':
+					usage(argv[0]);
+					want_exit = true;
+					break;
+				case 'o':
+					//if(optarg == NULL) bad_opt = true;
+					break;
+				case 'p':
+					break;
+				default:
+					bad_opts = true; // getopt alrready prints something.
+					break;
+			}
+	}
+	if(bad_opts)
+	{
+		usage(argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	else if(want_exit)
+		exit(EXIT_SUCCESS);
+	optind = 1;//reset option index
+	while((c = getopt(argc,argv,"hpo:")) != -1)
+	{
+		switch(c)
+		{
+			case 'o': // set output file.
+				break;
+			case 'p':
+				globals.options.passive = true;
+				break;
+			default:
+				break;
+		}
+	}
 }

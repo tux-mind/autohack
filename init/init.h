@@ -24,4 +24,5 @@
 #include <sys/ioctl.h>
 #include <linux/netdevice.h>
 #include <arpa/inet.h>
+#include <getopt.h>
 #include "header.h"

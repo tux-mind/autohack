@@ -5,5 +5,5 @@
 [normal]				parser_online(): killing thread while calling getadddrinfo() will leak memory, but wait for getadddrinfo() ends is too
 [normal]				add feature: search for essid online ( the one with cracked algorithm ) for retrieve defaul passphrase files. we will go to integrare OSP into master branch.
 [high priority]	columpsi should define host and subnets structs.
-[high priority] init: parse options.
+[high priority] init: parse long options.
 [high priority] init: check for system envinroment ( network adapters, wordlist, storage and so on )
