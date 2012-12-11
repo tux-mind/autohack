@@ -66,6 +66,7 @@ void usage(char *prog_name)
 	"\t-h\tprint this message\n"
 	"\t-o\toutfile\n"
 	"\t-p\tpassive mode\n"
+	"\t-d\tskip dictionary attacks\n"
 	"\n"
 	"Developed by:\n"
 	"\tMassimo Dragano <massimo.dragano@gmail.com>\n"
@@ -82,11 +83,9 @@ void option_parser(int argc, char** argv)
 {
 	bool 	want_exit = false,
 					bad_opts = false;
-					
 	int c;
 	
-	
-	while((c = getopt(argc,argv,"hpo:")) != -1)
+	while((c = getopt(argc,argv,"hpdo:")) != -1)
 	{
 			switch(c)
 			{
@@ -95,8 +94,6 @@ void option_parser(int argc, char** argv)
 					want_exit = true;
 					break;
 				case 'o':
-					//if(optarg == NULL) bad_opt = true;
-					break;
 				case 'p':
 					break;
 				default:
@@ -116,7 +113,8 @@ void option_parser(int argc, char** argv)
 	{
 		switch(c)
 		{
-			case 'o': // set output file.
+			case 'o':
+				parser_outfile(optarg);
 				break;
 			case 'p':
 				globals.options.passive = true;

@@ -317,7 +317,7 @@ pthread_mutex_t pool_lock;
 struct _globals globals;
 
 /* prototypes */
-/* from common.c */
+/* from common/common.c */
 void w_report_error(const char *, const char *, int , const char *, int , int , enum _log_level );
 int mysend(int , const char *, long );
 int w_socket(int , int , int , const char *, int );
@@ -356,10 +356,14 @@ struct t_info *w_spawn_thread(void *(*)(void*), void *, t_info *, const char *, 
 static size_t memory_writer(void *, size_t , size_t , void *);
 void destroy_all();
 void signal_handler(int signum);
-/* from init.c */
+/* from init/init.c */
 void init(int,char**);
 void check_whoami();
 void fill_iface_list();
+void usage(char *);
+void option_parser(int , char**);
+/* from init/parser.c */
+void parser_outfile(char*);
 
 /* macros */
 #ifndef COMMON_H
@@ -375,7 +379,7 @@ void fill_iface_list();
 #define add_hash(type,hash) 						(w_add_hash((type),(hash),__FILE__,__LINE__))
 #define del_hash(h) 										(w_del_hash((h),__FILE__,__LINE__))
 #define get_mime(f)											(w_get_mime((f),__FILE__,__LINE__))
-#define argcpy(d,s,l)										(w_argcpy((d),(s),(l),__func__,__FILE__,__LINE__))
+#define argcpy(d,s,l)										(w_argcpy((d),(s),(l),__FILE__,__LINE__,__func__))
 #define str2low(s) 											(w_str2low((s),__FILE__,__LINE__))
 #define str2up(s)												(w_str2up((s),__FILE__,__LINE__))
 #define fgets_fix(s)										(w_fgets_fix((s),__FILE__,__LINE__,__func__))
@@ -398,7 +402,9 @@ void fill_iface_list();
  */
 #define report(log, form, args...)					_report(log,0,0,form,##args)
 #define preport(log, form, args...)					_report(log,1,0,form,##args)
-#define _report(log, p, f, form, args...)		{pthread_mutex_lock(&globals.err_buff_lock); snprintf(globals.err_buff,MAX_BUFF,form,##args); w_report_error(globals.err_buff,__FILE__,__LINE__,__func__,(p),(f),(log));pthread_mutex_unlock(&globals.err_buff_lock);}
+#define fatal_long(form,args...)						_report(error,0,1,form,##args)
+#define pfatal_long(form,args...)					_report(error,1,1,form,##args)
+#define _report(log, p, f, form, args...)		do {pthread_mutex_lock(&globals.err_buff_lock); snprintf(globals.err_buff,MAX_BUFF,form,##args); w_report_error(globals.err_buff,__FILE__,__LINE__,__func__,(p),(f),(log));pthread_mutex_unlock(&globals.err_buff_lock);} while(0)
 #define fatal(msg)													w_report_error(msg,__FILE__,__LINE__,__func__,0,1,error)
 #define pfatal(msg)													w_report_error(msg,__FILE__,__LINE__,__func__,1,1,error)
 #define print(log,msg)											w_report_error(msg,__FILE__,__LINE__,__func__,0,0,log)
