@@ -361,9 +361,12 @@ void init(int,char**);
 void check_whoami();
 void fill_iface_list();
 void usage(char *);
+void option_preparser(int , char **);
 void option_parser(int , char**);
 /* from init/parser.c */
 void parser_outfile(char*);
+void parser_wordlist(char *);
+
 
 /* macros */
 #ifndef COMMON_H
