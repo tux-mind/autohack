@@ -361,7 +361,12 @@ char *w_str2up(const char *arg,const char *file,int line_no)
 	return str;
 }
 
-/* TODO */
+/* TODO
+ * handle disk free space. wrapping around the file to save disk space.
+ * optimization: compute found string and then search it in the output file.
+ * define the output format with N3tAug3r, imho is better if user can choose from some predefined pattern, or provide a custom one?
+ * if accepting user-defined format, we must be VERY carefull about user input ( format string exploits )
+ */
 void w_write_out(_hash *hash, _wpa *wpa, const char *file, int line_no, const char *caller)
 {
 	FILE *fd=NULL;

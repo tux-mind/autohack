@@ -5,7 +5,8 @@
 [normal]				parser_online(): killing thread while calling getadddrinfo() will leak memory, but wait for getadddrinfo() ends is too
 [normal]				add feature: search for essid online ( the one with cracked algorithm ) for retrieve defaul passphrase files. we will go to integrare OSP into master branch.
 [normal]				have to chose if program require options or it can run without them.
+[normal]				init: parsing input files while get system envinroment. ( threads )
 [high priority]	columpsi should define host and subnets structs.
 [high priority] init: parse long options.
 [high priority] init: check for system envinroment ( network adapters, wordlist, storage and so on )
-[high priority] init: parsing input files while get system envinroment. ( threads )
+[high priority] w_write_output: define output protocol. take a look just up on the function.
