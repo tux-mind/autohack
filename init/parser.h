@@ -5,4 +5,5 @@
 #include <sys/types.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/statvfs.h>
 #include "header.h"

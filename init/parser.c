@@ -4,6 +4,7 @@
 void parser_outfile(char *arg)
 {
 	struct stat out_stat;
+	struct statvfs disk_stat;
 	char *path=NULL;
 	FILE *fout;
 
@@ -16,7 +17,19 @@ void parser_outfile(char *arg)
 			if((path = get_full_path(arg)) != NULL)
 			{
 				if(access(path,W_OK) == 0)
-					argcpy(&(globals.outfile),path,strlen(path)+1);
+				{
+					if(statvfs(path,&disk_stat) == 0)
+					{
+						if((disk_stat.f_bsize * disk_stat.f_bavail) > MIN_FREE_SPACE )
+						{
+							argcpy(&(globals.outfile),path,strlen(path)+1);
+						}
+						else
+							fatal_long("we need at least %lu free bytes for writing some output.",MIN_FREE_SPACE);
+					}
+					else
+						pfatal(path);
+				}
 				else
 					pfatal(path);
 			}

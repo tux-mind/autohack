@@ -17,6 +17,7 @@ AC_FUNC_REALLOC
 
 AC_CHECK_HEADERS([sys/socket.h])
 AC_CHECK_HEADERS([regex.h])
+AC_CHECK_HEADERS([sys/statvfs.h])
 AC_CHECK_LIB([pthread],[main])
 AC_CHECK_LIB([curl],[main])
 AC_CHECK_LIB([crypto],[main])

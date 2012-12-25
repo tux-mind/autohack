@@ -90,6 +90,9 @@ typedef bool _Bool;
 #	ifndef HAVE_REGEX_H
 #		error "this system havn't regex.h"
 #	endif
+#ifndef HAVE_SYS_STATVFS_H
+#		error "this system havn't sys/statvfs.h"
+#endif
 #	ifndef HAVE_STDLIB_H
 #		error "this system havn't stdlib.h O_o"
 #	endif
@@ -123,6 +126,7 @@ typedef bool _Bool;
 #define MAX_BUFF 				(PATH_MAX)
 #define MAX_LINE				255
 #define TKILL_TIMEOUT		100 // ms
+#define MIN_FREE_SPACE  10485760 // Bytes
 #ifndef MAX_INTERFACES // maximum number of network interfaces
 #	define MAX_INTERFACES 20
 #endif
