@@ -352,7 +352,7 @@ static void wait_cleanup(void *);
 static void *thread_wait(void *);
 static void wait_first_cleanup(void *);
 static void *thread_wait_first(void *);
-struct t_info *w_spawn_thread(void *(*)(void*), void *, t_info *, const char *, int );
+struct t_info *w_thread_spawn(void *(*)(void*), void *, t_info *, const char *, int );
 static size_t memory_writer(void *, size_t , size_t , void *);
 void destroy_all();
 void signal_handler(int signum);
@@ -386,8 +386,8 @@ void parser_wordlist(char *);
 #define str2low(s) 											(w_str2low((s),__FILE__,__LINE__))
 #define str2up(s)												(w_str2up((s),__FILE__,__LINE__))
 #define fgets_fix(s)										(w_fgets_fix((s),__FILE__,__LINE__,__func__))
-#define tspawn_wait(a,f,w)							(w_thread_spawn((a),(f),(w),__FILE__,__LINE__))
-#define tspawn(a,f)											(w_thread_spawn((a),(f),NULL,__FILE__,__LINE__))
+#define tspawn_wait(f,a,w)							(w_thread_spawn((f),(a),(w),__FILE__,__LINE__))
+#define tspawn(f,a)											(w_thread_spawn((f),(a),NULL,__FILE__,__LINE__))
 #define find_myself()										(w_find_myself(__FILE__,__LINE__))
 #define get_full_path(f)								(w_get_full_path((f),__FILE__,__LINE__,__func__))
 #define tmpnam(s)												(w_tmpnam((s),__FILE__,__LINE__,__func__))

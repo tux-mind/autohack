@@ -1315,7 +1315,7 @@ static void *thread_wait_first(void *arg)
  * if running threads number overclimb the number of processors,
  * the spawned thread will wait until anyone of the others threads finish.
  */
-struct t_info *w_spawn_thread(void *(*func)(void*), void *arg, t_info *wait, const char *file, int line_no)
+struct t_info *w_thread_spawn(void *(*func)(void*), void *arg, t_info *wait, const char *file, int line_no)
 {
 	int num,run;
 	static int cores=-1;
@@ -1403,6 +1403,7 @@ void destroy_all()
 	_hash *tmp=NULL,*old=NULL;
 	struct t_info *ttmp=NULL,*told=NULL;
 	_wpa *wold=NULL,*wtmp=NULL;
+	_iface *iold=NULL,*itmp=NULL;
 	int i,n_sleep=0;
 	bool force_shutdown = false;
 
@@ -1463,6 +1464,10 @@ void destroy_all()
 			free((void *) old->plain);
 		free(old);
 	}
+
+	//destroy iface list
+	for(itmp=globals.iface_list;itmp!=NULL;itmp = itmp->next,free_iface(iold))
+		iold = itmp;
 
 	for(wtmp=globals.wpa_list;wtmp!=NULL;wtmp=wtmp->next,free_wpa(wold))
 		wold=wtmp;
