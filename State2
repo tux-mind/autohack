@@ -29,7 +29,7 @@ drawing a map divided in:
 
 GREEN: LAN (eth0, eth1)
 RED: WAN
-BLU: WLAN (wlan0, wlan1)
+BLUE: WLAN (wlan0, wlan1)
 ORANGE: DMZ
 OTHER: (ex dual red)
 
