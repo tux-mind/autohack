@@ -27,8 +27,9 @@ services of each individual host to identify its characteristics and classify th
 
 drawing a map divided in:
 
-GREEN: internal (ex eth0 eth1)
-RED: external
-BLU: wifi (wlan0, wlan1)
-ORANGE: dmz
+GREEN: LAN (eth0, eth1)
+RED: WAN
+BLU: WLAN (wlan0, wlan1)
+ORANGE: DMZ
+OTHER: (ex dual red)
 
