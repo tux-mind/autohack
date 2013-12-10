@@ -1,11 +1,20 @@
  This is a draft of how the state-machine should work
 
 __________________________________________________________
-STATE # |  NAME        |  MAIN FUNCTION  |  MAIN ERRORS  |
+STATE # |  NAME        |  MAIN FUNCTION  |  MAIN ERRORS  |              Fingerprint: ARPscan-PORTSscan-Services
 ----------------------------------------------------------
 0       |  init        |  init data      |  memory/HDD   |
-1       |  Network     |  Hack WiFi/ARPp |  ARPlock      |
+1       |  Network     |  NetSetup       |  MacFilter    |
 2       |  Enumeration |  Fingerprint    |  IDS          |
-3       |  Selection   |  choose_servers |  no exploits  |
-4       |  Attack      |  exploiting     |  exploit fail |
+3       |  VulnFinder  |  VulnFinder     |  Offline      |
+4       |  ExplLookup  |  lookup         |  no exploits  |
+5       |  Attack      |  exploiting     |  exploit fail |
+6       |  Sniffing    |  sniffing       |  no arp       |
 ----------------------------------------------------------
+
+
+State 1:   Wifi - MacDump
+           LAN - Bruteforcing on few vendors 
+        
+
+State 2:  ARP - NOP
